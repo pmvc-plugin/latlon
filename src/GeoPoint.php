@@ -1,5 +1,5 @@
 <?php
-namespace PMVC\PlugIn\mercator_projection;
+namespace PMVC\PlugIn\latlon;
 
 class GeoPoint
 {

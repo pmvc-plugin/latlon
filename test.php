@@ -1,9 +1,9 @@
 <?php
 PMVC\Load::plug();
 PMVC\addPlugInFolder('../');
-class MercatorProjectionTest extends PHPUnit_Framework_TestCase
+class LatLonTest extends PHPUnit_Framework_TestCase
 {
-    private $_plug='mercator_projection';
+    private $_plug='latlon';
     function testPlugin()
     {
         PMVC\plug($this->_plug);

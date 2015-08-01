@@ -1,6 +1,6 @@
 <?php
-namespace PMVC\PlugIn\mercator_projection;
-use namespace PMVC\PlugIn\image\CoordPoint;
+namespace PMVC\PlugIn\latlon;
+use PMVC\PlugIn\image\CoordPoint;
 
 /**
  * mercator projection
@@ -68,27 +68,32 @@ class MercatorProjection{
     /**
      * get corners for one static map
      */
-    function getCorners (GeoPoint $center, $zoom, $mapWidth, $mapHeight){
+    function getCorners (GeoPoint $center, $zoom, ImageSize $mapsize){
         $scale = pow(2, $zoom);
         $centerXY = $this->fromLatLonToPoint($center);
         $SW_XY = new CoordPoint (
-               $centerXY->x - ($mapWidth/2) / $scale,
-               $centerXY->y + ($mapHeight/2) / $scale
+               $centerXY->x - ($mapsize->w / 2) / $scale,
+               $centerXY->y + ($mapsize->h / 2) / $scale
         );
         $SW_LatLon = $this->fromPointToLatLon($SW_XY);
         $NE_XY = new CoordPoint (
-               $centerXY->x + ($mapWidth/2) / $scale,
-               $centerXY->y - ($mapHeight/2) / $scale
+               $centerXY->x + ($mapsize->w / 2) / $scale,
+               $centerXY->y - ($mapsize->h / 2) / $scale
         ); 
         $NW_XY = new CoordPoint (
-               -$centerXY->x + ($mapWidth/2) / $scale,
-               -$centerXY->y - ($mapHeight/2) / $scale
+               -$centerXY->x + ($mapsize->w / 2) / $scale,
+               -$centerXY->y - ($mapsize->h / 2) / $scale
         ); 
         $NE_LatLon = $this->fromPointToLatLon($NE_XY);
-        var_dump($NE_XY,$NW_XY,$SW_XY);
         return (object)array(
-            'NE'=>$NE_LatLon,
-            'SW'=>$SW_LatLon
+            'latlon'=>array(
+                'NE'=>$NE_LatLon,
+                'SW'=>$SW_LatLon
+            ),
+            'xy'=>array(
+                'NE'=>$NE_XY,
+                'SW'=>$SW_XY
+            )
         );
 
     }
