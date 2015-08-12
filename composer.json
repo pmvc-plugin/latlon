@@ -12,7 +12,8 @@
     ],
     "require": {
         "pmvc/pmvc": "*",
-        "pmvc-plugin/image": "*"
+        "pmvc-plugin/image": "*",
+        "pmvc-plugin/static_map": "*"
     },
     "minimum-stability": "dev"
 }

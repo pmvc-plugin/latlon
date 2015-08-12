@@ -1,6 +1,6 @@
 <?php
 namespace PMVC\PlugIn\latlon;
-use PMVC\PlugIn\image\CoordPoint;
+use PMVC\PlugIn\image\Coord2D;
 
 /**
  * mercator projection
@@ -15,7 +15,7 @@ class MercatorProjection{
 
     function __construct()
     {
-        $this->_pixelOrigin = new CoordPoint(self::MERCATOR_RANGE / 2, self::MERCATOR_RANGE / 2);;
+        $this->_pixelOrigin = new Coord2D(self::MERCATOR_RANGE / 2, self::MERCATOR_RANGE / 2);;
         $this->_pixelsPerLonDegree = self::MERCATOR_RANGE / 360;
         $this->_pixelsPerLonRadian = self::MERCATOR_RANGE / (2 * pi());
     }        
@@ -25,7 +25,7 @@ class MercatorProjection{
      */
     function fromLatLonToPoint(GeoPoint $latLon, $opt_point=null)
     {
-        $point = $opt_point ? $opt_point : new CoordPoint(0,0);
+        $point = $opt_point ? $opt_point : new Coord2D(0,0);
         $origin = $this->_pixelOrigin;
         $point->x = $origin->x + $latLon->lon * $this->_pixelsPerLonDegree;
         $siny = $this->bound(sin($this->degreesToRadians($latLon->lat)), -0.9999, 0.9999);
@@ -47,7 +47,7 @@ class MercatorProjection{
       return $rad / (pi() / 180);
     }
 
-    public function fromPointToLatLon(CoordPoint $point) {
+    public function fromPointToLatLon(Coord2D $point) {
       $origin = $this->_pixelOrigin;
       $lng = ($point->x - $origin->x) / $this->_pixelsPerLonDegree;
       $latRadians = ($point->y - $origin->y) / -$this->_pixelsPerLonRadian;
@@ -56,46 +56,59 @@ class MercatorProjection{
     }
 
     /**
-     * get geo point "a", angle "angle", and dis "m"
-     * return geo point "b"
-     */
-    function getNewPointByDistance(CoordPoint $pa, $angle, $len){
-      $angle = deg2rad($angle);
-      $pb = new CoordPoint($pa->x+$len*sin($angle), $pa->y+$len*cos($angle));
-      return $pb;
-    }
-
-    /**
      * get corners for one static map
+     * NE 135, NW 225, SE 45, SW 315  
+     * @see http://miguel-miguel-matemticas.blogspot.tw/2012/03/sin-cos-y-tan-30-60-45-y-90.html
      */
-    function getCorners (GeoPoint $center, $zoom, ImageSize $mapsize){
+    function getCorners (GeoPoint $center, $zoom, ImageSize $mapsize)
+    {
         $scale = pow(2, $zoom);
         $centerXY = $this->fromLatLonToPoint($center);
-        $SW_XY = new CoordPoint (
+        $SW_XY = new Coord2D (
                $centerXY->x - ($mapsize->w / 2) / $scale,
                $centerXY->y + ($mapsize->h / 2) / $scale
         );
-        $SW_LatLon = $this->fromPointToLatLon($SW_XY);
-        $NE_XY = new CoordPoint (
+        $NE_XY = new Coord2D (
                $centerXY->x + ($mapsize->w / 2) / $scale,
                $centerXY->y - ($mapsize->h / 2) / $scale
-        ); 
-        $NW_XY = new CoordPoint (
-               -$centerXY->x + ($mapsize->w / 2) / $scale,
-               -$centerXY->y - ($mapsize->h / 2) / $scale
-        ); 
-        $NE_LatLon = $this->fromPointToLatLon($NE_XY);
-        return (object)array(
-            'latlon'=>array(
-                'NE'=>$NE_LatLon,
-                'SW'=>$SW_LatLon
-            ),
-            'xy'=>array(
-                'NE'=>$NE_XY,
-                'SW'=>$SW_XY
-            )
         );
+        //get SE and NW from 2d
+        $img = \PMVC\plug('image');
 
+        $distance = $img->getDistance(
+            $centerXY,
+            $NE_XY //from any point, each point should equal
+        );
+        $NW_XY = $img->getPointByDistance(
+            $centerXY,
+            225,
+            $distance
+        );
+        $SE_XY = $img->getPointByDistance(
+            $centerXY,
+            45,
+            $distance
+        );
+        $xy = array(
+            'NE'=>$NE_XY,
+            'NW'=>$NW_XY,
+            'SE'=>$SE_XY,
+            'SW'=>$SW_XY,
+            'center'=>$centerXY
+        );
+        $latlon = array();
+        $static = \PMVC\plug('static_map');
+        $map = array();
+        foreach ($xy as $k=>$v) {
+            $latlon[$k] = $this->fromPointToLatLon($v);
+            $static['center'] = $latlon[$k]->toString();
+            $map[$k] = $static->toUrl();
+        }
+        return (object)array(
+            'latlon'=>$latlon,
+            'xy'=>$xy,
+            'map'=>$map
+        );
     }
 
 
