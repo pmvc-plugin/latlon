@@ -1,6 +1,7 @@
 <?php
 namespace PMVC\PlugIn\latlon;
 use PMVC\PlugIn\image\Coord2D;
+use PMVC\PlugIn\image\ImageSize;
 
 /**
  * mercator projection
