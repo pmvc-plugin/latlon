@@ -15,7 +15,7 @@ class MercatorProjection{
 
     function __construct()
     {
-        $this->_pixelOrigin = new Coord2D(self::MERCATOR_RANGE / 2, self::MERCATOR_RANGE / 2);;
+        $this->_pixelOrigin = new Coord2D(self::MERCATOR_RANGE / 2, self::MERCATOR_RANGE / 2);
         $this->_pixelsPerLonDegree = self::MERCATOR_RANGE / 360;
         $this->_pixelsPerLonRadian = self::MERCATOR_RANGE / (2 * pi());
     }        
