@@ -1,8 +1,8 @@
 <?php
-PMVC\Load::plug();
-PMVC\addPlugInFolder('../');
 use PMVC\PlugIn\image\ImageSize;
 
+\PMVC\Load::plug();
+\PMVC\addPlugInFolders([__DIR__.'/../']);
 
 class LatLonTest extends PHPUnit_Framework_TestCase
 {
